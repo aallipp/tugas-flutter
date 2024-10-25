@@ -38,19 +38,20 @@ class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
 
   void getNext() {
-    current = WordPair.random();
-    notifyListeners();
+    current = WordPair.random();//acak kata
+    notifyListeners();//kirim kata yg diacak ke listener untuk di tampilkan di layar
   }
-
+  //membuat variabel bertipe "list"/daftar bernama favorites untuk menyimpan daftar kata yg di-like
   var favorites = <WordPair>[];
-
+  
+  //fungsi untuk menambahkan kata ke dalam , atau menghapus kata dari list favorite
   void toggleFavorite() {
     if (favorites.contains(current)) {
-      favorites.remove(current);
+      favorites.remove(current);//menghapus kata dari list favorite
     } else {
-      favorites.add(current);
+      favorites.add(current);//menambah kata ke list favorite
     }
-    notifyListeners();
+    notifyListeners();//menempelkan fungsi ini ke button like supaya button like bisa mengetahui jika dirinya sedang ditekan
   }
 }
 
@@ -69,9 +70,14 @@ class _MyHomePageState extends State<MyHomePage> {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = GeneratorPage();
-      case 1:
         page = Placeholder();
+        break;
+      case 1:
+        page = GeneratorPage();
+        break;
+      case 2:
+        page = FavoritesPage();
+        break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
 }
@@ -84,6 +90,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: NavigationRail(
                   extended: Constraints.maxWidth >= 600,
                   destinations: [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.person), 
+                      label: Text('Profile'),
+                    ),
                     NavigationRailDestination(
                       icon: Icon(Icons.home),
                       label: Text('Home'),
@@ -115,6 +125,34 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+class FavoritesPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+
+    if (appState.favorites.isEmpty) {
+      return Center(
+        child: Text('No favorites yet.'),
+      );
+    }
+
+    return ListView(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text('You have '
+              '${appState.favorites.length} favorites:'),
+        ),
+        for (var pair in appState.favorites)
+          ListTile(
+            leading: Icon(Icons.favorite),
+            title: Text(pair.asLowerCase),
+          ),
+      ],
+    );
+  }
+}
+
 class GeneratorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -132,7 +170,7 @@ class GeneratorPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          BigCard(pair: pair),
+          BigCard(pair: pair),//mengambil nilai dari variabel pair, lalu diubah menjadi huruf kecil semua dari ditampilkan sebagai teks 
           SizedBox(height: 10),
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -169,7 +207,8 @@ class BigCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = Theme.of(context); //menambahkan tema pada card 
+    // membuat style untuk text, diberi nama style. Style warna mengikuti parrent
     final style = theme.textTheme.displayMedium!.copyWith(
       color: theme.colorScheme.onPrimary,
     );
@@ -178,7 +217,8 @@ class BigCard extends StatelessWidget {
       color: theme.colorScheme.primary,
       child: Padding(
         padding: const EdgeInsets.all(20),//memberi jarak/padding di sekitar teks
-        child: Text(pair.asLowerCase, style: style,semanticsLabel: "${pair.first} ${pair.second}",),//membuat kata mencajdi huruf kecil
+        child: Text(pair.asLowerCase, style: style,
+        semanticsLabel: "${pair.first} ${pair.second}",),//membuat kata mencajdi huruf kecil
       ),
     );
   }
